@@ -1,9 +1,8 @@
-use std::collections::HashMap;
-
-use crate::error::{
+use handle_errors::{
     Error,
     Error::{MissingParameters, ParseError},
 };
+use std::collections::HashMap;
 
 #[derive(Debug)]
 pub struct Pagination {
