@@ -15,6 +15,18 @@ async fn main() {
     log::info!("This is some info!");
     log::warn!("This is a warning!");
 
+    let log = warp::log::custom(|info| {
+        eprintln!(
+            "{} {} {} {:?} from {} with {:?}",
+            info.method(),
+            info.path(),
+            info.status(),
+            info.elapsed(),
+            info.remote_addr().unwrap(),
+            info.request_headers()
+        );
+    });
+
     let store = store::Store::new();
     let store_filter = warp::any().map(move || store.clone());
 
@@ -65,6 +77,7 @@ async fn main() {
         .or(delete_question)
         .or(add_answer)
         .with(cors)
+        .with(log)
         .recover(return_error);
 
     warp::serve(routes).run(([127, 0, 0, 1], 3030)).await;
