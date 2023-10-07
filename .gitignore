@@ -1,3 +1,5 @@
+*.log
+
 # Created by https://www.toptal.com/developers/gitignore/api/linux,macos,windows,vim,emacs,sublimetext,visualstudiocode,intellij+all,rust
 # Edit at https://www.toptal.com/developers/gitignore?templates=linux,macos,windows,vim,emacs,sublimetext,visualstudiocode,intellij+all,rust
 
