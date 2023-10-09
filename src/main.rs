@@ -11,9 +11,17 @@ mod types;
 #[tokio::main]
 async fn main() {
     let log_filter = std::env::var("RUST_LOG")
-        .unwrap_or_else(|_| "rust_web_development=info,warp=error".to_owned());
+        .unwrap_or_else(|_| "handle_errors=warn,rust_web_development=info,warp=error".to_owned());
 
-    let store = store::Store::new();
+    let connection_string = "postgres://postgres:secret@localhost:5432/app";
+
+    let store = store::Store::new(connection_string).await;
+
+    sqlx::migrate!()
+        .run(&store.clone().connection)
+        .await
+        .expect("Cannot run migrations");
+
     let store_filter = warp::any().map(move || store.clone());
 
     tracing_subscriber::fmt()
@@ -45,7 +53,7 @@ async fn main() {
 
     let update_question = warp::put()
         .and(warp::path("questions"))
-        .and(warp::path::param::<String>())
+        .and(warp::path::param::<i32>())
         .and(warp::path::end())
         .and(store_filter.clone())
         .and(warp::body::json())
@@ -53,7 +61,7 @@ async fn main() {
 
     let delete_question = warp::delete()
         .and(warp::path("questions"))
-        .and(warp::path::param::<String>())
+        .and(warp::path::param::<i32>())
         .and(warp::path::end())
         .and(store_filter.clone())
         .and_then(routes::question::delete_question);
