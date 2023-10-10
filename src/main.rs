@@ -4,24 +4,34 @@ use handle_errors::return_error;
 use tracing_subscriber::fmt::format::FmtSpan;
 use warp::{http::Method, Filter};
 
+mod config;
 mod profanity;
 mod routes;
 mod store;
 mod types;
 
 #[tokio::main]
-async fn main() {
-    let log_filter = std::env::var("RUST_LOG")
-        .unwrap_or_else(|_| "handle_errors=warn,rust_web_development=info,warp=error".to_owned());
+async fn main() -> Result<(), handle_errors::Error> {
+    let config = config::Config::new().expect("Config can't be set");
 
-    let connection_string = "postgres://postgres:secret@localhost:5432/app";
+    let log_filter = format!(
+        "handle_errors={},rust_web_development={},warp={}",
+        config.log_level, config.log_level, config.log_level
+    );
 
-    let store = store::Store::new(connection_string).await;
+    let connection_string = &format!(
+        "postgres://{}:{}@{}:{}/{}",
+        config.db_user, config.db_password, config.db_host, config.db_port, config.db_name
+    );
+
+    let store = store::Store::new(connection_string)
+        .await
+        .map_err(handle_errors::Error::DatabaseQueryError)?;
 
     sqlx::migrate!()
         .run(&store.clone().connection)
         .await
-        .expect("Cannot run migrations");
+        .map_err(handle_errors::Error::MigrationError)?;
 
     let store_filter = warp::any().map(move || store.clone());
 
@@ -103,5 +113,7 @@ async fn main() {
         .with(warp::trace::request())
         .recover(return_error);
 
-    warp::serve(routes).run(([127, 0, 0, 1], 3030)).await;
+    warp::serve(routes).run(([127, 0, 0, 1], config.port)).await;
+
+    Ok(())
 }
