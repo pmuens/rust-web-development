@@ -3,7 +3,7 @@ use chrono::prelude::*;
 use rand::Rng;
 use std::{env, future};
 use warp::Filter;
-use warp::{http::StatusCode, Rejection, Reply};
+use warp::{Rejection, Reply};
 
 use crate::store::Store;
 use crate::types::account::{Account, AccountId, Session};
@@ -18,7 +18,7 @@ pub async fn register(store: Store, account: Account) -> Result<impl Reply, Reje
     };
 
     match store.add_account(account).await {
-        Ok(_) => Ok(warp::reply::with_status("Account added", StatusCode::OK)),
+        Ok(_) => Ok(warp::reply::json(&"Account added".to_string())),
         Err(e) => Err(warp::reject::custom(e)),
     }
 }
