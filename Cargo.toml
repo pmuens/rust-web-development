@@ -24,6 +24,7 @@ paseto = "2.0"
 chrono = "0.4.19"
 dotenv = "0.15.0"
 clap = { version = "3.1.7", features = ["derive"] }
+openssl = { version = "0.10.32", features = ["vendored"] }
 
 [build-dependencies]
 platforms = "2.0.0"
