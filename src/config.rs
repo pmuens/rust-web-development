@@ -32,6 +32,10 @@ impl Config {
     pub fn new() -> Result<Config, handle_errors::Error> {
         let config = Config::parse();
 
+        if env::var("API_LAYER_URL").is_err() {
+            panic!("API layer URL not set");
+        }
+
         if env::var("BAD_WORDS_API_KEY").is_err() {
             panic!("BadWords API key not set");
         }
@@ -71,6 +75,7 @@ mod config_tests {
     use super::*;
 
     fn set_env() {
+        env::set_var("API_LAYER_URL", "http://127.0.0.1:3030");
         env::set_var("BAD_WORDS_API_KEY", "API_KEY");
         env::set_var("PASETO_KEY", "RANDOM WORDS WINTER MACINTOSH PC");
         env::set_var("POSTGRES_USER", "user");
