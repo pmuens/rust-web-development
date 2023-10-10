@@ -113,6 +113,11 @@ async fn main() -> Result<(), handle_errors::Error> {
         .with(warp::trace::request())
         .recover(return_error);
 
+    tracing::info!(
+        "Q&A service build ID {}",
+        env!("RUST_WEB_DEVELOPMENT_VERSION"),
+    );
+
     warp::serve(routes).run(([127, 0, 0, 1], config.port)).await;
 
     Ok(())
